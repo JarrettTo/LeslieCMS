@@ -3,5 +3,6 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
-  "/api/dropbox": "pages/api/dropbox.js"
+  "/api/dropbox": "pages/api/dropbox.js",
+  "/api/thumbnail": "pages/api/thumbnail.js"
 }

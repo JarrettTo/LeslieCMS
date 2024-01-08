@@ -10,6 +10,7 @@ interface DropboxFilesList {
 
 
 
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<DropboxResponse<any>[] | { error: string; }>
@@ -18,13 +19,36 @@ export default async function handler(
 
   try {
     // Specify the types of the response you expect from Dropbox SDK
-    const files = await dbx.filesListFolder({ path: '' }) as unknown as DropboxFilesList;
+    const response = await dbx.filesListFolder({ path: '' });
+    const files: DropboxFilesList = response.result; // Use the actual property that has the data
+    console.log(files);
 
-    const linksPromises= files.entries?.map(async (file) => {
+    // Ensure files.entries is not undefined before mapping
+    if (!files.entries) {
+      throw new Error('files.entries is undefined');
+    }
+    const linksPromises= files.entries.map(async (file) => {
       if(file['.tag'] === 'file' ){
-          dbx.sharingCreateSharedLinkWithSettings({
-          path: file.path_lower,
-        });
+        try{
+          const existingLinksResponse= await dbx.sharingListSharedLinks({
+            path: file.path_lower,
+            direct_only: true, // Set to true to filter for direct links only
+          });
+          // If there are existing links, return the first one
+          if (existingLinksResponse.result.links.length > 0) {
+            return existingLinksResponse.result.links[0];
+          }
+          else{
+            return await dbx.sharingCreateSharedLinkWithSettings({
+              path: file.path_lower,
+           })
+          }
+        }
+        catch (error){
+          throw error;
+        }
+          
+        
 
       }
     })
