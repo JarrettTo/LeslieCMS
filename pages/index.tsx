@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Lightbox from 'react-image-lightbox';
 import styles from './styles.module.css';
+import Head from 'next/head';
+import 'react-image-lightbox/style.css'; // This only needs to be imported once
 
 type FileType = {
   ".tag": string;
@@ -24,8 +26,9 @@ const Home: React.FC = () => {
   const [files, setFiles] = useState<FileType[]>([]); // replace with actual data fetching
   const [isOpen, setIsOpen] = useState(false);
   const [currentFile, setCurrentFile] = useState<string>('');
-  const openLightbox = (url: string) => {
-    setCurrentFile(url);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const openLightbox = (index: number) => {
+    setCurrentImageIndex(index);
     setIsOpen(true);
   };
   function getFileExtension(filename) {
@@ -33,17 +36,11 @@ const Home: React.FC = () => {
     const lastDotIndex = filename?.lastIndexOf('.');
     return lastDotIndex !== -1 ? filename?.substring(lastDotIndex + 1) : '';
   }
-  function bufferToArrayBuffer(buffer) {
-    return buffer.buffer?.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-}
-  function convertToUrl(buffer) {
-    const arrayBuffer = bufferToArrayBuffer(buffer);
-    const blob = new Blob([arrayBuffer]); // Adjust the MIME type as needed
-
-    const imageUrl = URL.createObjectURL(blob);
-    console.log(imageUrl)
-    return imageUrl;
-}
+  function removeFileExtension(fileName) {
+    // Use a regular expression to replace the file extension with an empty string
+    return fileName.replace(/\.[^/.]+$/, "");
+  }
+  
   async function convertDropboxLink(file: FileType) {
     try {
       return file?.url.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("dl=0", "dl=1");
@@ -52,6 +49,7 @@ const Home: React.FC = () => {
       return null; // or some fallback URL
     }
   }
+  
 
   const fetchDropboxFiles = async () => {
     try {
@@ -90,35 +88,58 @@ const Home: React.FC = () => {
     }
   };
   useEffect(() => {
-   
+    fetchDropboxFiles();
   }, []);
   return (
+    <>
+    <text className={styles.name}>LESLIE SHARPE</text>
     <div>
-      <button onClick={fetchDropboxFiles}>Load Files from Dropbox</button>
+      
       <div  className={styles.gridContainer}>
         {files?.map((file, index) => (
-          <div key={file?.id || index}  className={styles.gridItem} onClick={() => openLightbox(file?.preview_url)}>
-
-            {file?.preview_url && getFileExtension(file?.name) === 'mp4'
-              ? (
-                  <div  className={styles.videoThumbnail}>
-                    <video src={file?.preview_url} preload="metadata"/>
-                    <div className={styles.playButton}>Play</div>
+          <>
+          <Head>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+          </Head>
+          <div key={file?.id || index} className={styles.gridItem} onClick={() => openLightbox(index)}>
+            <div>
+            <div className={styles.imageWrapper}>
+              {file?.preview_url && getFileExtension(file?.name) === 'mp4'
+                ? (
+                  <div className={styles.videoThumbnail}>
+                    <video src={file?.preview_url} preload="metadata" />
+               
                   </div>
                 )
-              : <img src={file?.preview_url} alt={file?.name} />}
-            <text>{file?.name}</text>
-            <text>{file?.client_modified}</text>
+                : <img src={file?.preview_url} alt={file?.name} />}
+            </div>
+
           </div>
+          <div className={styles.textContainer}>
+            <text className={styles.gridItemName}>{removeFileExtension(file?.name)}</text>
+            <text className={styles.gridItemDate}>{file?.client_modified}</text>
+          </div>
+          </div>
+          </>
         ))}
       </div>
-      {isOpen && (
-        <Lightbox
-          mainSrc={currentFile}
-          onCloseRequest={() => setIsOpen(false)}
-        />
-      )}
+    
     </div>
+    {isOpen && (
+      <Lightbox
+        mainSrc={files[currentImageIndex].preview_url}
+        nextSrc={files[(currentImageIndex + 1) % files.length].preview_url} // Loop back to first image
+        prevSrc={files[(currentImageIndex + files.length - 1) % files.length].preview_url} // Loop back to last image
+        onCloseRequest={() => setIsOpen(false)}
+        onMovePrevRequest={() =>
+          setCurrentImageIndex((currentImageIndex + files.length - 1) % files.length)
+        }
+        onMoveNextRequest={() =>
+          setCurrentImageIndex((currentImageIndex + 1) % files.length)
+        }
+      />
+    )}
+    </>
   );
 };
 

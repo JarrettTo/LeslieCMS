@@ -1,27 +1,80 @@
+@font-face {
+  font-family: 'Replica Pro';
+  src: url('/public/fonts/ReplicaPro.ttf') format('ttf');
+   
+  font-weight: normal;
+  font-style: normal;
+  /* Add other font styles if available */
+}
 .gridContainer {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   padding: 10px;
+  justify-content: center;
+}
+.textContainer{
+  display: inline-flex; /* changed to inline-flex */
+  flex-direction: column;
+}
+
+.elementContainer {
+  display: grid; /* Use grid to match child widths */
+  grid-template-columns: 1fr; /* One column grid */
+  gap: 10px; /* Spacing between grid items */
 }
 
 .gridItem {
-  display: flex;
-  flex-direction: column; /* Stack children vertically */
-  align-items: center; /* Center children horizontally */
-  text-align: center; /* Center text */
-  margin-bottom: 20px; /* Add space below each grid item */
+  display: inline-flex; /* changed to inline-flex */
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.imageWrapper {
+  display: inline-block; /* Shrink to fit the content */
+  line-height: 0; /* Remove space below images */
 }
 
 .gridItem img {
-  height: 18vh; /* Fixed height for images */
-  width: auto; /* Maintain aspect ratio */
-  object-fit: contain; /* Avoid stretching the image */
+  height: 18vh;
+  width: auto; /* Adjust width to maintain aspect ratio */
+  object-fit: contain;
+  display: block; /* Display block to fill the width of its container */
+}
+
+.gridItemName {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  font-weight:600;
+  white-space: nowrap;
+  font-family: 'Replica Pro', monospace;
+}
+
+.name {
+  margin: 2%;
+  padding-top: 30%;
+  font-size: 20px;
+  font-weight:600;
+  white-space: nowrap;
+  font-family: 'Replica Pro', monospace; /* Add this line */
+}
+.gridItemDate {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  font-weight:normal;
+  white-space: nowrap;
+  font-family: 'Replica Pro', monospace; /* Add this line */
 }
 .gridItem video {
-  height: 18vh; /* Ensures the content does not exceed the grid item's height */
-  object-fit: contain; /* Ensures the aspect ratio is maintained without cropping */
-  width: auto; /* Allows the content to scale its width based on the aspect ratio */
+  height: 18vh;
+  object-fit: contain;
+  width: auto; /* Adjust width to maintain aspect ratio */
   display: block; /* Removes extra space beneath the content */
   margin: 0 auto; /* Centers the content horizontally */
 }
@@ -31,10 +84,26 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  /* Additional styling for the play button */
 }
 
 .gridItem:hover {
-  /* Hover effect, e.g., a shadow */
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.react-image-lightbox-overlay {
+  background-color: rgba(0, 0, 0, 0.8) !important; /* Dimmed background */
+}
+
+/* Customize the size and position of the lightbox */
+.react-image-lightbox-content {
+  width: 80vw !important; /* Width as a percentage of the viewport width */
+  height: 80vh !important; /* Height as a percentage of the viewport height */
+  top: 10vh !important; /* Position from the top */
+  left: 10vw !important; /* Position from the left */
+}
+
+/* Ensure that image fits nicely within the lightbox */
+.react-image-lightbox-image {
+  max-width: 100%;
+  max-height: 100%;
 }
