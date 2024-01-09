@@ -1,0 +1,40 @@
+.gridContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px;
+}
+
+.gridItem {
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  align-items: center; /* Center children horizontally */
+  text-align: center; /* Center text */
+  margin-bottom: 20px; /* Add space below each grid item */
+}
+
+.gridItem img {
+  height: 18vh; /* Fixed height for images */
+  width: auto; /* Maintain aspect ratio */
+  object-fit: contain; /* Avoid stretching the image */
+}
+.gridItem video {
+  height: 18vh; /* Ensures the content does not exceed the grid item's height */
+  object-fit: contain; /* Ensures the aspect ratio is maintained without cropping */
+  width: auto; /* Allows the content to scale its width based on the aspect ratio */
+  display: block; /* Removes extra space beneath the content */
+  margin: 0 auto; /* Centers the content horizontally */
+}
+
+.playButton {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  /* Additional styling for the play button */
+}
+
+.gridItem:hover {
+  /* Hover effect, e.g., a shadow */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}

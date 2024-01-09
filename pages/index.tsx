@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Lightbox from 'react-image-lightbox';
-import { files } from 'dropbox';
-
+import styles from './styles.module.css';
 
 type FileType = {
   ".tag": string;
@@ -47,17 +46,6 @@ const Home: React.FC = () => {
 }
   async function convertDropboxLink(file: FileType) {
     try {
-      if (getFileExtension(file?.name) === "mp4") {
-        const res = await fetch(`/api/thumbnail?path=${encodeURIComponent(file?.path_lower)}`);
-        if (!res.ok) {
-          throw new Error(`Error: ${res.status}`);
-        }
-
-        // Handle non-JSON response
-        const blob = await res.blob();
-        return URL.createObjectURL(blob);
-     
-      }
       return file?.url.replace("www.dropbox.com", "dl.dropboxusercontent.com").replace("dl=0", "dl=1");
     } catch (error) {
       console.error('Error in convertDropboxLink:', error);
@@ -74,35 +62,62 @@ const Home: React.FC = () => {
       const data = await res.json();
       const processedFiles = await Promise.all(data.map(async file => {
         const url = await convertDropboxLink(file);
-        return { ...file, preview_url: url }; // Combine the file info with the new URL
+        if(url!=null){
+          return { ...file, preview_url: url }; 
+        }
+        // Combine the file info with the new URL
       }));
-      console.log(processedFiles)
-      setFiles(processedFiles);
+      const filteredFiles = processedFiles.filter(file => file!= null);
+      console.log(filteredFiles)
+      setFiles(filteredFiles);
+
+    } catch (error) {
+      console.error('There was an error fetching the Dropbox files', error);
+    }
+  };
+
+  const fetchCloudinaryFiles = async () => {
+    try {
+      const res = await fetch('/api/cloudinary');
+      if (!res.ok) {
+        throw new Error(`Error: ${res.status}`);
+      }
+      const data = await res.json();
+      console.log(data);
 
     } catch (error) {
       console.error('There was an error fetching the Dropbox files', error);
     }
   };
   useEffect(() => {
-    fetchDropboxFiles();
+   
   }, []);
   return (
     <div>
       <button onClick={fetchDropboxFiles}>Load Files from Dropbox</button>
-      <div>
-        {files?.map( (file, index) => (
-          <button key={file?.id || index} onClick={() => openLightbox(file?.url)} style={{ padding: 0, border: 'none', background: 'none' }}>
-            <img src={file?.preview_url} alt={file?.name} style={{ width: '100px', height: '100px' }} />
-          </button>
-        ))}
-        {isOpen && (
-          <Lightbox
-            mainSrc={currentFile}
-            onCloseRequest={() => setIsOpen(false)}
-          />
-        )}
-      </div>
+      <div  className={styles.gridContainer}>
+        {files?.map((file, index) => (
+          <div key={file?.id || index}  className={styles.gridItem} onClick={() => openLightbox(file?.preview_url)}>
 
+            {file?.preview_url && getFileExtension(file?.name) === 'mp4'
+              ? (
+                  <div  className={styles.videoThumbnail}>
+                    <video src={file?.preview_url} preload="metadata"/>
+                    <div className={styles.playButton}>Play</div>
+                  </div>
+                )
+              : <img src={file?.preview_url} alt={file?.name} />}
+            <text>{file?.name}</text>
+            <text>{file?.client_modified}</text>
+          </div>
+        ))}
+      </div>
+      {isOpen && (
+        <Lightbox
+          mainSrc={currentFile}
+          onCloseRequest={() => setIsOpen(false)}
+        />
+      )}
     </div>
   );
 };
