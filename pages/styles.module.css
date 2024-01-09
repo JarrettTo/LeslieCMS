@@ -107,3 +107,112 @@
   max-width: 100%;
   max-height: 100%;
 }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fadeOut {
+  animation: fadeOut 0.3s forwards;
+}
+
+@keyframes fadeOut {
+  to { opacity: 0; }
+}
+
+.lightboxBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s;
+}
+.mediaContainer {
+  /* A max size smaller than the viewport to provide some space around */
+  max-width: 80vw;
+  max-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Add this to prevent spillover */
+}
+
+/* Style for the content to maintain its aspect ratio and not necessarily fill the container */
+.lightboxContent img,
+.lightboxContent video {
+  /* Set to 'auto' to maintain the aspect ratio */
+  width: auto;
+  height: auto;
+  /* Ensure it doesn't exceed the media container */
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+}
+.lightboxContent {
+  position: relative;
+  max-width: 70vw;
+  max-height: 70vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+
+
+/* Navigation buttons */
+.lightboxButton {
+  border: 2px solid white; /* Solid border for premium look */
+  background-color: rgba(50, 50, 50, 0.8); /* Slightly darker background for contrast */
+  color: white;
+  font-size: 30px; /* Larger font for clarity */
+  width: 50px; /* Fixed width and height for a uniform circle */
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute; /* Position the buttons absolutely within the backdrop */
+  z-index: 1010; /* Above the lightbox content */
+}
+
+.lightboxButton.prev,
+.lightboxButton.next {
+  /* ... existing styles ... */
+  top: 50%; /* Center vertically */
+  transform: translateY(-50%); /* Adjust vertical alignment */
+}
+
+.lightboxButton.prev {
+  left: 20px; /* Space from the left edge */
+}
+
+.lightboxButton.next {
+  right: 20px; /* Space from the right edge */
+}
+
+
+/* Close button positioned at the top-right corner of the viewport */
+.lightboxButton.close {
+  top: 20px; /* Slightly lower from the top for accessibility */
+  right: 20px;
+}
+
+/* Add a fade-out animation to the close function */
+.closeLightbox {
+  animation: fadeOut 0.3s forwards; /* The 'forwards' value will retain the last keyframe state after the animation completes */
+}
+.lightboxOpening {
+  animation: fadeIn 0.3s;
+}
+
+/* Animation only when closing */
+.lightboxClosing {
+  animation: fadeOut 0.3s forwards;
+}

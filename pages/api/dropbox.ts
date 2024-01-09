@@ -8,11 +8,6 @@ interface DropboxFilesList {
   has_more: boolean;
 }
 
-
-
-
-
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<DropboxResponse<any>[] | { error: string; }>

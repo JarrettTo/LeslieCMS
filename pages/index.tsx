@@ -25,12 +25,15 @@ const Home: React.FC = () => {
 
   const [files, setFiles] = useState<FileType[]>([]); // replace with actual data fetching
   const [isOpen, setIsOpen] = useState(false);
-  const [currentFile, setCurrentFile] = useState<string>('');
+  const [isClosing, setIsClosing] = useState(false);
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
     setIsOpen(true);
+    setIsClosing(false); // Make sure to reset closing state
   };
+  
   function getFileExtension(filename) {
     // Find the last dot in the filename
     const lastDotIndex = filename?.lastIndexOf('.');
@@ -73,7 +76,71 @@ const Home: React.FC = () => {
       console.error('There was an error fetching the Dropbox files', error);
     }
   };
+  const closeLightbox = () => {
+    setIsOpen(false);
+  };
+  const moveToNextMedia = (event) => {
+    event.stopPropagation(); // Stop click from bubbling up
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % files.length);
+  };
+  
+  const moveToPrevMedia = (event) => {
+    event.stopPropagation(); // Stop click from bubbling up
+    setCurrentImageIndex((prevIndex) => (prevIndex - 1 + files.length) % files.length);
+  };
+  const LightboxContent = () => {
+    const file = files[currentImageIndex];
+    const isVideo = getFileExtension(file.name) === 'mp4';
+  
+    // Function to handle closing with animation
+    // Function to handle closing with animation
+    const handleCloseLightbox = () => {
+      setIsClosing(true); // Set closing state to trigger fade-out animation
+    
+      // After the animation duration, close the lightbox
+      setTimeout(() => {
+        setIsOpen(false);
+        setIsClosing(false); // Reset closing state
+      }, 300); // Animation duration
+    };
+    
 
+    return (
+      <div
+        className={`${styles.lightboxBackdrop} ${isOpen && !isClosing ? styles.lightboxOpening : ''} ${isClosing ? styles.lightboxClosing : ''}`}
+        onClick={handleCloseLightbox}
+      >
+        <div className={styles.mediaContainer}>
+          {isVideo ? (
+            <video
+              key={file.id}
+              controls
+              src={file.preview_url}
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            />
+          ) : (
+            <img
+              src={file.preview_url}
+              alt={file.name}
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            />
+          )}
+        </div>
+        {files.length > 1 && (
+          <>
+            <button className={`${styles.lightboxButton} ${styles.prev}`} onClick={moveToPrevMedia}>
+              &lsaquo;
+            </button>
+            <button className={`${styles.lightboxButton} ${styles.next}`} onClick={moveToNextMedia}>
+              &rsaquo;
+            </button>
+
+          </>
+        )}
+        <button className={`${styles.lightboxButton} ${styles.close}`} onClick={handleCloseLightbox}>×</button>
+      </div>
+    );
+  };
   const fetchCloudinaryFiles = async () => {
     try {
       const res = await fetch('/api/cloudinary');
@@ -125,20 +192,7 @@ const Home: React.FC = () => {
       </div>
     
     </div>
-    {isOpen && (
-      <Lightbox
-        mainSrc={files[currentImageIndex].preview_url}
-        nextSrc={files[(currentImageIndex + 1) % files.length].preview_url} // Loop back to first image
-        prevSrc={files[(currentImageIndex + files.length - 1) % files.length].preview_url} // Loop back to last image
-        onCloseRequest={() => setIsOpen(false)}
-        onMovePrevRequest={() =>
-          setCurrentImageIndex((currentImageIndex + files.length - 1) % files.length)
-        }
-        onMoveNextRequest={() =>
-          setCurrentImageIndex((currentImageIndex + 1) % files.length)
-        }
-      />
-    )}
+    {isOpen &&<LightboxContent />}
     </>
   );
 };
