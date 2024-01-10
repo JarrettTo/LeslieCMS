@@ -25,8 +25,10 @@ const Home: React.FC = () => {
 
   const [files, setFiles] = useState<FileType[]>([]); // replace with actual data fetching
   const [isOpen, setIsOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const videoRef = useRef(null);
+  const playerWrapperRef = useRef();
   const progressBarRef = useRef(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const openLightbox = (index: number) => {
@@ -110,6 +112,112 @@ const Home: React.FC = () => {
     event.stopPropagation(); // Stop click from bubbling up
     setCurrentImageIndex((prevIndex) => (prevIndex - 1 + files.length) % files.length);
   };
+  const ProfileDetails = () =>{
+    return(
+      <div className={styles.baseBlock}>
+        <div className={styles.headingOverlay}>
+          <text className={styles.nameOverlay}>LESLIE SHARPE</text>
+          <button className={`${styles.lightboxButton} ${styles.closeHeader}`} onClick={()=>setProfileOpen(false)}>(×)</button>
+        </div>
+        <div className={styles.holder}>
+          <div className={styles.description}>
+            
+            Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Donec ullamcorper nulla non metus auctor fringilla. Donec id elit non mi porta gravida at eget metus. Morbi leo risus, porta acconsectetur ac, vestibulum at eros.
+          
+          </div>
+          <div className={styles.emptySpace}>
+            {/* This div will take up the remaining space */}
+          </div>
+        </div>
+        <div className={styles.holder}>
+          <div className={styles.buttons}>
+             <button className={styles.socialButton}>Contact</button>
+             <button className={styles.socialButton}>LinkedIn</button>
+             <button className={styles.socialButton}>Instagram</button>
+             <button className={styles.socialButton}>Email</button>
+          </div>
+          <div className={styles.emptySpaceButtons}>
+            {/* This div will take up the remaining space */}
+          </div>
+        </div>
+        <div className={styles.columnHolder}>
+          <div className={styles.column}>
+            EXPERIENCE<br/>
+            Bear Meets Eagle On Fire<br/>
+            Creative Director<br/>
+            Aug 2022 - present<br/>
+            <br/>
+            Howatson & Co<br/>
+            Head of Art & Creative Director<br/>
+            Jan 2021 - Aug 2022<br/>
+            Bear Meets Eagle On Fire Freelance creative Aug 2019 – Dec 2021<br/>
+            R/GA, DDB, We Are Social,<br/>
+            The Monkeys Freelance Senior Creative<br/>
+            Feb 2018 - Oct 2018<br/>
+            <br/>
+            Marcel Sydney<br/>
+            Associate Creative Director<br/>
+            Nov 2015 - Nov 2017<br/>
+            <br/>
+            Droga5 Sydney<br/>
+            Senior Art Director<br/>
+            Jan 2012- Nov 2011<br/>
+          </div>
+          <div className={styles.column}>
+            AWARDS<br/>
+            Cannes Gold Lion x 1<br/>
+            Cannes Silver Lion x 4<br/>
+            Cannes Bronze Lion x 1<br/>
+            <br/>
+            D&AD Yellow Pencil x 3<br/>
+            D&AD Graphite Pencil x 4<br/>
+            D&AD Wood Pencil x 6<br/>
+            <br/>
+            AWARD Gold x 8<br/>
+            AWARD Silver x 15<br/>
+            AWARD Bronze x 5<br/>
+            <br/>
+            Beazley Product<br/>
+            Design of the Year<br/>
+            <br/>
+            Exhibitions<br/>
+            <br/>
+            DEMO Festival, Amsterdam
+            Most Contagious, London
+            London Design Museum, London
+            Art Gallery of NSW, Sydney
+            Rise, Carriage Works Sydney
+            Work Features
+          </div>
+          <div className={styles.column}>
+            Exhibitions<br/>
+            <br/>
+            DEMO Festival, Amsterdam<br/>
+            Most Contagious, London<br/>
+            London Design Museum, London<br/>
+            Art Gallery of NSW, Sydney<br/>
+            Rise, Carriage Works Sydney<br/>
+            Work Features<br/>
+            WORK FEATURES<br/>
+            <br/>
+            It’s Nice That 1,2,3,4<br/>
+            Wired 1<br/>
+            Fast Company 1,2<br/>
+            CNN 1<br/>
+            The Guardian 1<br/>
+            Contagious Magazine 1<br/>
+            Complex Mag 1<br/>
+            Creators Project 1<br/>
+            Business Insider 1<br/>
+            Cool Hunting 1,2<br/>
+            Creative Review 1,2,3<br/>
+            Hype Beast 1, 2<br/>
+            Creativity 1,2,3<br/>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const LightboxContent = () => {
     const file = files[currentImageIndex];
     const isVideo = getFileExtension(file.name) === 'mp4';
@@ -137,16 +245,17 @@ const Home: React.FC = () => {
         <div className={styles.mediaContainer}>
           {isVideo ? (
             <>
-            <ReactPlayer
-              width="90%"
-              height="90%"
-              url={file.preview_url}
-              controls={true}
-              // light is usefull incase of dark mode
-              light={false}
-              // picture in picture
-              pip={true}
-            />
+            
+              <ReactPlayer
+                width="100%"
+                className={styles.reactPlayer}
+                height="100%"
+                url={file.preview_url}
+                controls={true}
+                light={false}
+                pip={true}
+              />
+            
             
             </>
           
@@ -170,7 +279,7 @@ const Home: React.FC = () => {
           </>
         )}
         <button className={`${styles.lightboxButton} ${styles.info}`} onClick={handleCloseLightbox}>(i)</button>
-        <button className={`${styles.lightboxButton} ${styles.close}`} onClick={handleCloseLightbox}>×</button>
+        <button className={`${styles.lightboxButton} ${styles.close}`} onClick={handleCloseLightbox}>(×)</button>
       </div>
     );
   };
@@ -202,7 +311,10 @@ const Home: React.FC = () => {
 
   return (
     <>
-    <text className={styles.name}>LESLIE SHARPE</text>
+    <div className={styles.heading}>
+      <text className={styles.nameOverlay}>LESLIE SHARPE</text>
+      <button className={`${styles.leslieInfo}` } onClick={() => setProfileOpen(true)}>(i)</button>
+    </div>
     <div>
       
       <div  className={styles.gridContainer}>
@@ -236,6 +348,7 @@ const Home: React.FC = () => {
     
     </div>
     {isOpen &&<LightboxContent />}
+    {profileOpen &&<ProfileDetails />}
     </>
   );
 };
