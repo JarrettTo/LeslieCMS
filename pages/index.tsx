@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Lightbox from 'react-image-lightbox';
 import styles from './styles.module.css';
 import Head from 'next/head';
 import 'react-image-lightbox/style.css'; // This only needs to be imported once
-
+import ReactPlayer from "react-player";
 type FileType = {
   ".tag": string;
   url: string;
@@ -26,7 +26,8 @@ const Home: React.FC = () => {
   const [files, setFiles] = useState<FileType[]>([]); // replace with actual data fetching
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-
+  const videoRef = useRef(null);
+  const progressBarRef = useRef(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);
@@ -52,7 +53,31 @@ const Home: React.FC = () => {
       return null; // or some fallback URL
     }
   }
-  
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(1); // Range from 0 to 1
+
+  const togglePlayPause = () => {
+    const video = videoRef.current;
+    if (video.paused || video.ended) {
+      video.play();
+      setIsPlaying(true);
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  };
+
+  const handleVolumeChange = (e) => {
+    const newVolume = e.target.value;
+    videoRef.current.volume = newVolume;
+    setVolume(newVolume);
+  };
+
+  const handleProgress = () => {
+    const video = videoRef.current;
+    const progress = (video.currentTime / video.duration) * 100;
+    progressBarRef.current.value = progress;
+  };
 
   const fetchDropboxFiles = async () => {
     try {
@@ -111,12 +136,20 @@ const Home: React.FC = () => {
         </div>
         <div className={styles.mediaContainer}>
           {isVideo ? (
-            <video
-              key={file.id}
-              controls
-              src={file.preview_url}
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            <>
+            <ReactPlayer
+              width="90%"
+              height="90%"
+              url={file.preview_url}
+              controls={true}
+              // light is usefull incase of dark mode
+              light={false}
+              // picture in picture
+              pip={true}
             />
+            
+            </>
+          
           ) : (
             <img
               src={file.preview_url}
@@ -156,7 +189,17 @@ const Home: React.FC = () => {
   };
   useEffect(() => {
     fetchDropboxFiles();
-  }, []);
+    // Moved inside useEffect to ensure `videoRef.current` is available
+    const video = videoRef.current;
+    if (video) {
+      video.addEventListener('timeupdate', handleProgress);
+      
+      return () => {
+        video.removeEventListener('timeupdate', handleProgress);
+      };
+    }
+  }, []); // Adding 'files' as a dependency to re-run when files are fetched
+
   return (
     <>
     <text className={styles.name}>LESLIE SHARPE</text>

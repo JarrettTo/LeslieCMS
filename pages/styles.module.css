@@ -148,7 +148,10 @@
   max-width: 80vw;
   max-height: 80vh;
   display: flex;
+  
   justify-content: center;
+  position: relative; /* This enables absolute positioning relative to this container */
+  flex-direction: column;
   align-items: center;
   overflow: hidden; /* Add this to prevent spillover */
 }
@@ -235,4 +238,33 @@
 /* Animation only when closing */
 .lightboxClosing {
   animation: fadeOut 0.3s forwards;
+}
+.video-controls {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px;
+  background: #333;
+  color: white;
+  position: absolute;
+  bottom: 0; /* Position at the bottom of the mediaContainer */
+  left: 0;
+  width: 100%; /* Stretch across the container */
+  z-index: 2010;
+}
+
+.video-controls button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.video-controls input[type="range"] {
+  width: 100%;
+}
+.video {
+  max-width: 100%;
+  max-height: calc(100% - 40px); /* Adjust the 40px to the height of your controls */
+  /* ... other styles ... */
 }
