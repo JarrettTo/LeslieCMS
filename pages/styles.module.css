@@ -119,19 +119,29 @@
 @keyframes fadeOut {
   to { opacity: 0; }
 }
-
+.lightboxOverlay {
+  position: absolute;
+  top: 10px; /* Slightly lower from the top for accessibility */
+  left: 20px;
+  padding: 10px;
+  color: black; /* Text color */
+  font-size: 14px; /* Adjust as needed */
+  z-index: 1020; /* Above the image and controls */
+  font-family: 'Replica Pro', monospace;
+  font-weight: 600;
+}
 .lightboxBackdrop {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s;
+  background-color: #FFF;
+  z-index: 1000
+    
 }
 .mediaContainer {
   /* A max size smaller than the viewport to provide some space around */
@@ -168,13 +178,16 @@
 
 /* Navigation buttons */
 .lightboxButton {
-  border: 2px solid white; /* Solid border for premium look */
-  background-color: rgba(50, 50, 50, 0.8); /* Slightly darker background for contrast */
-  color: white;
+
+  
+  color: black;
   font-size: 30px; /* Larger font for clarity */
-  width: 50px; /* Fixed width and height for a uniform circle */
+  font-family: 'Replica Pro', monospace;
+  font-weight: 600;
   height: 50px;
-  border-radius: 50%;
+  background: transparent; /* Makes the button background transparent */
+  border: none; /* Removes any border that may be present */
+  outline: none;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -200,9 +213,16 @@
 
 /* Close button positioned at the top-right corner of the viewport */
 .lightboxButton.close {
-  top: 20px; /* Slightly lower from the top for accessibility */
+  
+  top: 9px; /* Slightly lower from the top for accessibility */
   right: 20px;
 }
+.lightboxButton.info {
+  top: 10px; /* Slightly lower from the top for accessibility */
+  right: 60px;
+  font-size: 17px
+}
+
 
 /* Add a fade-out animation to the close function */
 .closeLightbox {

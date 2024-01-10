@@ -76,9 +76,6 @@ const Home: React.FC = () => {
       console.error('There was an error fetching the Dropbox files', error);
     }
   };
-  const closeLightbox = () => {
-    setIsOpen(false);
-  };
   const moveToNextMedia = (event) => {
     event.stopPropagation(); // Stop click from bubbling up
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % files.length);
@@ -91,9 +88,8 @@ const Home: React.FC = () => {
   const LightboxContent = () => {
     const file = files[currentImageIndex];
     const isVideo = getFileExtension(file.name) === 'mp4';
-  
-    // Function to handle closing with animation
-    // Function to handle closing with animation
+    const imageCounterText = `${currentImageIndex + 1} / ${files.length} ${files[currentImageIndex].name}`;
+
     const handleCloseLightbox = () => {
       setIsClosing(true); // Set closing state to trigger fade-out animation
     
@@ -108,8 +104,11 @@ const Home: React.FC = () => {
     return (
       <div
         className={`${styles.lightboxBackdrop} ${isOpen && !isClosing ? styles.lightboxOpening : ''} ${isClosing ? styles.lightboxClosing : ''}`}
-        onClick={handleCloseLightbox}
+        
       >
+        <div className={styles.lightboxOverlay}>
+          {imageCounterText}
+        </div>
         <div className={styles.mediaContainer}>
           {isVideo ? (
             <video
@@ -137,6 +136,7 @@ const Home: React.FC = () => {
 
           </>
         )}
+        <button className={`${styles.lightboxButton} ${styles.info}`} onClick={handleCloseLightbox}>(i)</button>
         <button className={`${styles.lightboxButton} ${styles.close}`} onClick={handleCloseLightbox}>×</button>
       </div>
     );
