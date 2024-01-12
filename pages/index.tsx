@@ -39,6 +39,7 @@ const Home: React.FC = () => {
 
   const [files, setFiles] = useState<FileType[]>([]); // replace with actual data fetching
   const [isOpen, setIsOpen] = useState(false);
+  const [panelClick, setPanelClick] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [fileOpen, setFileOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -119,11 +120,13 @@ const Home: React.FC = () => {
     }
   };
   const moveToNextMedia = (event) => {
+    setPanelClick(true)
     event.stopPropagation(); // Stop click from bubbling up
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % files.length);
   };
   
   const moveToPrevMedia = (event) => {
+    setPanelClick(true)
     event.stopPropagation(); // Stop click from bubbling up
     setCurrentImageIndex((prevIndex) => (prevIndex - 1 + files.length) % files.length);
   };
@@ -239,6 +242,7 @@ const Home: React.FC = () => {
     const imageCounterText = `${currentImageIndex + 1} / ${files.length} ${files[currentImageIndex]?.public_id}`;
 
     const handleCloseLightbox = () => {
+      setPanelClick(false)
       setIsClosing(true); // Set closing state to trigger fade-out animation
     
       // After the animation duration, close the lightbox
@@ -253,12 +257,16 @@ const Home: React.FC = () => {
 
     return (
       <div
-        className={`${styles.lightboxBackdrop} ${isOpen && !isClosing ? styles.lightboxOpening : ''} ${isClosing ? styles.lightboxClosing : ''}`}
+        className={`${styles.lightboxBackdrop} ${isOpen && !panelClick&&!isClosing ? styles.lightboxOpening : ''} ${isClosing && !panelClick? styles.lightboxClosing : ''}`}
         
       >
         
         <div className={styles.lightboxOverlay}>
           {imageCounterText}
+        </div>
+        <div className={styles.headingButtons}>
+          <button className={`${styles.headingButton} ${styles.info}`} onClick={()=> setFileOpen(!fileOpen)}>(i)</button>
+          <button className={`${styles.headingButton} ${styles.close}`} onClick={handleCloseLightbox}>(×)</button>
         </div>
         <div className={styles.contentContainer}>
         {fileOpen && (
@@ -312,8 +320,7 @@ const Home: React.FC = () => {
 
           </>
         )}
-        <button className={`${styles.lightboxButton} ${styles.info}`} onClick={()=> setFileOpen(!fileOpen)}>(i)</button>
-        <button className={`${styles.lightboxButton} ${styles.close}`} onClick={handleCloseLightbox}>(×)</button>
+        
       </div>
     );
   };
