@@ -140,7 +140,7 @@
   justify-content: center;
   align-items: center;
   background-color: #FFF;
-  z-index: 1000
+  z-index: 10
     
   
 }
@@ -152,14 +152,17 @@
   width: 40%; /* Full width */
   height: 100%; /* Full height */
   z-index: 10;
-  color: black; /* Example: white text */
+  color: white; /* Example: white text */
   display: flex;
   font-size: 14px;
   font-family: 'Replica Pro', monospace;
   font-weight: 600;
   line-height: 1.8;
+  mix-blend-mode: difference;
 
 }
+
+
 .mediaContainer {
   position: relative;
   height: 80vh;
@@ -306,6 +309,7 @@
   outline: none;
   z-index: 1010; /* Above the lightbox content */
 }
+
 .leslieInfo {
   color: black;
   font-size: 30px; /* Larger font for clarity */

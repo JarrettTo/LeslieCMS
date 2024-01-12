@@ -240,7 +240,6 @@ const Home: React.FC = () => {
     const file = files[currentImageIndex];
     const isVideo = file?.format === 'mp4';
     const imageCounterText = `${currentImageIndex + 1} / ${files.length} ${files[currentImageIndex]?.public_id}`;
-
     const handleCloseLightbox = () => {
       setPanelClick(false)
       setIsClosing(true); // Set closing state to trigger fade-out animation
@@ -251,8 +250,9 @@ const Home: React.FC = () => {
         setIsClosing(false); // Reset closing state
       }, 300); // Animation duration
     };
-    const handleInfoLightbox = async () => {
-      
+    const handleInfoLightbox =  () => {
+      setPanelClick(true)
+      setFileOpen(!fileOpen)
     };
 
     return (
@@ -265,23 +265,24 @@ const Home: React.FC = () => {
           {imageCounterText}
         </div>
         <div className={styles.headingButtons}>
-          <button className={`${styles.headingButton} ${styles.info}`} onClick={()=> setFileOpen(!fileOpen)}>(i)</button>
+          <button className={`${styles.headingButton} ${styles.info}`} onClick={handleInfoLightbox}>(i)</button>
           <button className={`${styles.headingButton} ${styles.close}`} onClick={handleCloseLightbox}>(×)</button>
         </div>
         <div className={styles.contentContainer}>
+        
         {fileOpen && (
-        <div className={styles.infoOverlay}>
-            IDEA:<br/>{file.context?.custom?.IDEA}<br/>
-            CLIENT: {file.context?.custom?.CLIENT}<br/>
-            AGENCY: {file.context?.custom?.AGENCY}<br/>
-            DIRECTOR: {file.context?.custom?.DIRECTOR}<br/>
-            PRODUCTION CO: {file.context?.custom["PRODUCTION CO"]}<br/>
-            SOUND: {file.context?.custom?.SOUND}<br/>
-            MY ROLE: {file.context?.custom["MY ROLE"]}<br/>
-            WITH: {file.context?.custom?.WITH}<br/>
-            AWARDS: {file.context?.custom?.AWARDS}<br/>
+          <div className={styles.infoOverlay}>
+              IDEA:<br/>{file.context?.custom?.IDEA}<br/>
+              CLIENT: {file.context?.custom?.CLIENT}<br/>
+              AGENCY: {file.context?.custom?.AGENCY}<br/>
+              DIRECTOR: {file.context?.custom?.DIRECTOR}<br/>
+              PRODUCTION CO: {file.context?.custom["PRODUCTION CO"]}<br/>
+              SOUND: {file.context?.custom?.SOUND}<br/>
+              MY ROLE: {file.context?.custom["MY ROLE"]}<br/>
+              WITH: {file.context?.custom?.WITH}<br/>
+              AWARDS: {file.context?.custom?.AWARDS}<br/>
 
-        </div>)}
+          </div>)}
         <div className={styles.mediaContainer}>
          
           {isVideo ? (
@@ -306,7 +307,9 @@ const Home: React.FC = () => {
               alt={file.public_id}
               style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
             />
+            
           )}
+          
         </div>
         </div>
         {files.length > 1 && (
@@ -375,7 +378,7 @@ const Home: React.FC = () => {
                
                   </div>
                 )
-                : <img src={file?.url} alt={file?.public_id} />}
+                : <img src={file?.url} alt={file?.public_id} ></img>}
             </div>
 
           </div>
