@@ -19,7 +19,7 @@ export default async function handler(
     const response = await dbx.filesListFolder({ path: '' });
     const files: DropboxFilesList = response.result; // Use the actual property that has the data
     console.log(files);
-
+    
     // Ensure files.entries is not undefined before mapping
     if (!files.entries) {
       throw new Error('files.entries is undefined');

@@ -5,21 +5,20 @@ import Head from 'next/head';
 import 'react-image-lightbox/style.css'; // This only needs to be imported once
 import ReactPlayer from "react-player";
 type FileType = {
-  ".tag": string;
+  access_mode: string;
+  asset_id: string;
+  bytes: number;
+  created_at: string;
+  folder: string;
+  format: string;
+  height: number;
+  public_id: string;
+  resource_type: string;
+  secure_url: string;
+  type: string;
   url: string;
-  name: string;
-  link_permissions: string;
-  client_modified: string;
-
-  id: string;
-
-  path_lower: string;
-  rev: string;
-  server_modified: string;
-  team_member_info:string;
-  content_owner_team_info: string;
-  size: number;
-  preview_url :string;
+  version: number;
+  width: number;
 };
 const Home: React.FC = () => {
 
@@ -220,8 +219,8 @@ const Home: React.FC = () => {
   }
   const LightboxContent = () => {
     const file = files[currentImageIndex];
-    const isVideo = getFileExtension(file.name) === 'mp4';
-    const imageCounterText = `${currentImageIndex + 1} / ${files.length} ${files[currentImageIndex].name}`;
+    const isVideo = file?.format === 'mp4';
+    const imageCounterText = `${currentImageIndex + 1} / ${files.length} ${files[currentImageIndex]?.public_id}`;
 
     const handleCloseLightbox = () => {
       setIsClosing(true); // Set closing state to trigger fade-out animation
@@ -232,7 +231,20 @@ const Home: React.FC = () => {
         setIsClosing(false); // Reset closing state
       }, 300); // Animation duration
     };
-    
+    const handleInfoLightbox = async () => {
+      try {
+        const res = await fetch(`/api/metadata?path=${encodeURIComponent("/"+files[currentImageIndex]?.public_id)}`);
+        if (!res.ok) {
+          throw new Error(`Error: ${res.status}`);
+        }
+        const data = await res.json();
+
+        console.log(data)
+  
+      } catch (error) {
+        console.error('There was an error fetching the Dropbox files', error);
+      }
+    };
 
     return (
       <div
@@ -250,7 +262,7 @@ const Home: React.FC = () => {
                 width="100%"
                 className={styles.reactPlayer}
                 height="100%"
-                url={file.preview_url}
+                url={file.url}
                 controls={true}
                 light={false}
                 pip={true}
@@ -261,8 +273,8 @@ const Home: React.FC = () => {
           
           ) : (
             <img
-              src={file.preview_url}
-              alt={file.name}
+              src={file.url}
+              alt={file.public_id}
               style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
             />
           )}
@@ -278,7 +290,7 @@ const Home: React.FC = () => {
 
           </>
         )}
-        <button className={`${styles.lightboxButton} ${styles.info}`} onClick={handleCloseLightbox}>(i)</button>
+        <button className={`${styles.lightboxButton} ${styles.info}`} onClick={handleInfoLightbox}>(i)</button>
         <button className={`${styles.lightboxButton} ${styles.close}`} onClick={handleCloseLightbox}>(×)</button>
       </div>
     );
@@ -291,13 +303,14 @@ const Home: React.FC = () => {
       }
       const data = await res.json();
       console.log(data);
-
+      setFiles(data)
     } catch (error) {
       console.error('There was an error fetching the Dropbox files', error);
     }
   };
   useEffect(() => {
-    fetchDropboxFiles();
+
+    fetchCloudinaryFiles();
     // Moved inside useEffect to ensure `videoRef.current` is available
     const video = videoRef.current;
     if (video) {
@@ -323,23 +336,23 @@ const Home: React.FC = () => {
           <Head>
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
           </Head>
-          <div key={file?.id || index} className={styles.gridItem} onClick={() => openLightbox(index)}>
+          <div key={file?.asset_id || index} className={styles.gridItem} onClick={() => openLightbox(index)}>
             <div>
             <div className={styles.imageWrapper}>
-              {file?.preview_url && getFileExtension(file?.name) === 'mp4'
+              {file?.url && file?.format === 'mp4'
                 ? (
                   <div className={styles.videoThumbnail}>
-                    <video src={file?.preview_url} preload="metadata" />
+                    <video src={file?.url} preload="metadata" />
                
                   </div>
                 )
-                : <img src={file?.preview_url} alt={file?.name} />}
+                : <img src={file?.url} alt={file?.public_id} />}
             </div>
 
           </div>
           <div className={styles.textContainer}>
-            <text className={styles.gridItemName}>{removeFileExtension(file?.name)}</text>
-            <text className={styles.gridItemDate}>{file?.client_modified}</text>
+            <text className={styles.gridItemName}>{removeFileExtension(file?.public_id)}</text>
+            <text className={styles.gridItemDate}>{file?.created_at}</text>
           </div>
           </div>
           </>

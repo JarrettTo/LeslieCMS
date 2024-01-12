@@ -20,14 +20,15 @@ export default async function handler(
       try {
           // Retrieve files from Cloudinary
           let result = await cloudinary.v2.api.resources({
-            type: 'upload',
             max_results: 500,
+            type: 'upload' ,
             context: true
           });
 
           // Send back the list of files
           res.status(200).json(result.resources);
       } catch (error) {
+          console.log(error);
           res.status(500).json({ error: 'Error retrieving files from Cloudinary' });
       }
   } else {
