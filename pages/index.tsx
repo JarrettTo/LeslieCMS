@@ -4,6 +4,20 @@ import styles from './styles.module.css';
 import Head from 'next/head';
 import 'react-image-lightbox/style.css'; // This only needs to be imported once
 import ReactPlayer from "react-player";
+type ContextMetadata = {
+  AGENCY: string;
+  AWARDS: string;
+  CLIENT: string;
+  DIRECTOR: string;
+  IDEA: string;
+  'MY ROLE': string;
+  'PRODUCTION CO': string;
+  SOUND: string;
+  WITH: string;
+};
+type custom={
+  custom: ContextMetadata
+}
 type FileType = {
   access_mode: string;
   asset_id: string;
@@ -19,12 +33,14 @@ type FileType = {
   url: string;
   version: number;
   width: number;
+  context: custom;
 };
 const Home: React.FC = () => {
 
   const [files, setFiles] = useState<FileType[]>([]); // replace with actual data fetching
   const [isOpen, setIsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [fileOpen, setFileOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const videoRef = useRef(null);
   const playerWrapperRef = useRef();
@@ -232,18 +248,7 @@ const Home: React.FC = () => {
       }, 300); // Animation duration
     };
     const handleInfoLightbox = async () => {
-      try {
-        const res = await fetch(`/api/metadata?path=${encodeURIComponent("/"+files[currentImageIndex]?.public_id)}`);
-        if (!res.ok) {
-          throw new Error(`Error: ${res.status}`);
-        }
-        const data = await res.json();
-
-        console.log(data)
-  
-      } catch (error) {
-        console.error('There was an error fetching the Dropbox files', error);
-      }
+      
     };
 
     return (
@@ -251,10 +256,26 @@ const Home: React.FC = () => {
         className={`${styles.lightboxBackdrop} ${isOpen && !isClosing ? styles.lightboxOpening : ''} ${isClosing ? styles.lightboxClosing : ''}`}
         
       >
+        
         <div className={styles.lightboxOverlay}>
           {imageCounterText}
         </div>
+        <div className={styles.contentContainer}>
+        {fileOpen && (
+        <div className={styles.infoOverlay}>
+            IDEA:<br/>{file.context?.custom?.IDEA}<br/>
+            CLIENT: {file.context?.custom?.CLIENT}<br/>
+            AGENCY: {file.context?.custom?.AGENCY}<br/>
+            DIRECTOR: {file.context?.custom?.DIRECTOR}<br/>
+            PRODUCTION CO: {file.context?.custom["PRODUCTION CO"]}<br/>
+            SOUND: {file.context?.custom?.SOUND}<br/>
+            MY ROLE: {file.context?.custom["MY ROLE"]}<br/>
+            WITH: {file.context?.custom?.WITH}<br/>
+            AWARDS: {file.context?.custom?.AWARDS}<br/>
+
+        </div>)}
         <div className={styles.mediaContainer}>
+         
           {isVideo ? (
             <>
             
@@ -279,6 +300,7 @@ const Home: React.FC = () => {
             />
           )}
         </div>
+        </div>
         {files.length > 1 && (
           <>
             <button className={`${styles.lightboxButton} ${styles.prev}`} onClick={moveToPrevMedia}>
@@ -290,7 +312,7 @@ const Home: React.FC = () => {
 
           </>
         )}
-        <button className={`${styles.lightboxButton} ${styles.info}`} onClick={handleInfoLightbox}>(i)</button>
+        <button className={`${styles.lightboxButton} ${styles.info}`} onClick={()=> setFileOpen(!fileOpen)}>(i)</button>
         <button className={`${styles.lightboxButton} ${styles.close}`} onClick={handleCloseLightbox}>(×)</button>
       </div>
     );

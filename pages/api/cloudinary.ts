@@ -14,7 +14,7 @@ cloudinary.v2.config({
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<Promise<any> | { error: string; }>
+  res: NextApiResponse<Promise<any>[] | { error: string; }>
 ) {
   if (req.method === 'GET') {
       try {
@@ -24,9 +24,17 @@ export default async function handler(
             type: 'upload' ,
             context: true
           });
-
-          // Send back the list of files
-          res.status(200).json(result.resources);
+          let result_videos = await cloudinary.v2.api.resources({
+            max_results: 500,
+            type: 'upload' ,
+            resource_type: 'video',
+            context: true
+          });
+          
+          const combinedResults = [...result.resources, ...result_videos.resources];
+          
+          // Send back the combined list of files
+          res.status(200).json(combinedResults);
       } catch (error) {
           console.log(error);
           res.status(500).json({ error: 'Error retrieving files from Cloudinary' });

@@ -121,7 +121,7 @@
 .lightboxOverlay {
   position: absolute;
   top: 10px; /* Slightly lower from the top for accessibility */
-  left: 20px;
+  left: 1%;
   padding: 10px;
   color: black; /* Text color */
   font-size: 14px; /* Adjust as needed */
@@ -131,6 +131,7 @@
 }
 .lightboxBackdrop {
   position: fixed;
+  
   top: 0;
   left: 0;
   right: 0;
@@ -141,10 +142,38 @@
   background-color: #FFF;
   z-index: 1000
     
+  
+}
+.infoOverlay {
+  position: absolute;
+  top: 0;
+  left: 1%;
+  padding-left:10px;
+  width: 40%; /* Full width */
+  height: 100%; /* Full height */
+  z-index: 10;
+  color: black; /* Example: white text */
+  display: flex;
+  font-size: 14px;
+  font-family: 'Replica Pro', monospace;
+  font-weight: 600;
+  line-height: 1.8;
+
 }
 .mediaContainer {
+  position: relative;
   height: 80vh;
   width:auto;
+  display: flex;
+  justify-content: center;
+  object-fit: contain;
+  align-items: center;
+  overflow: visible;
+}
+.contentContainer {
+  position: relative;
+  height: 80vh;
+  width:100%;
   display: flex;
   justify-content: center;
   object-fit: contain;
