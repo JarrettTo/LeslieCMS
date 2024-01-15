@@ -1,12 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 const formidable = require('formidable');
+import fs, { read } from 'fs';
 import multer from 'multer';
 import { Multer } from 'multer';
 import cloudinary from 'cloudinary';
 import * as nc from 'next-connect';
 import { Express, Request } from 'express';
 import { connect } from 'http2';
-
+const path = require('path');
 cloudinary.v2.config({
   cloud_name: process.env.CLOUD_NAME,
   api_key: process.env.API_KEY,
@@ -30,20 +31,34 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
  
      // Handle your logic here. 'fields' contains non-file fields; 'files' contains file data
-
+     
      const jsonData = JSON.parse(fields.json[0]);
      console.log("DATA"+fields.json[0])
      console.log("DATES" + fields['dates[chineserestaurantopenedtakeoutbox32oz3dsmodel001.jpg]'])
      const keys = Object.keys(jsonData);
+
      const uploadPromises = jsonData.map((record) => {
       console.log("WOW"+record)
-      console.log("FILES" + files)
+      console.log(Object.keys(files.files[0]));
+      
+    
+      const index = files.files.findIndex(file => file.originalFilename === record.FILE_NAME);
+
+      if (index !== -1) {
+          // Found the file, index is the index of the file in files.files
+          console.log(`File found at index: ${index}`);
+      } else {
+          // File not found
+          console.log("File not found");
+      }
       // Adjust the logic to find the correct file in the 'files' object
-      const file = files[record.FILE_NAME]; // Adjust this according to how files are named
+      const file = files.files[index]; // Adjust this according to how files are named
+      
       if (!file) {
         throw new Error(`No file found matching the name: ${record.FILE_NAME}`);
       }
-      const fileDate = new Date(fields['dates[chineserestaurantopenedtakeoutbox32oz3dsmodel001.jpg]']).toISOString();
+      console.log("CHECK: " + fields[`dates[${file.originalFilename}]`])
+      const fileDate = new Date(file.lastModifiedDate).toISOString();
       const context = {
         award: record.AWARD,
         idea: record.IDEA,
@@ -58,7 +73,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       };
       console.log(context)
       return new Promise((resolve, reject) => {
-        cloudinary.v2.uploader.upload_stream({ 
+        const readStream = fs.createReadStream(file.filepath);
+        const cloudinaryStream= cloudinary.v2.uploader.upload_stream({ 
           resource_type: 'auto', 
           public_id: record["FILE_NAME"], // Optional: use a public ID from the record
           context: context // Optional: add additional metadata from the record
@@ -68,7 +84,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           } else {
             resolve(result);
           }
-        }).end(file.buffer);
+        });
+        readStream.pipe(cloudinaryStream);
       });
     });
     const uploadResults = await Promise.all(uploadPromises);
