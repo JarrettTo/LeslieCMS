@@ -1,12 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 const formidable = require('formidable');
 import fs, { read } from 'fs';
-import multer from 'multer';
-import { Multer } from 'multer';
+
 import cloudinary from 'cloudinary';
-import * as nc from 'next-connect';
-import { Express, Request } from 'express';
-import { connect } from 'http2';
+
 const path = require('path');
 cloudinary.v2.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -15,9 +12,24 @@ cloudinary.v2.config({
   secure: true,
 });
 
+const Dropbox = require('dropbox').Dropbox;
+const dbx = new Dropbox({ accessToken: 'YOUR_DROPBOX_ACCESS_TOKEN' });
 
 
+function parseCookies(req) {
+  // The cookie header is a string of semicolon-separated key=value pairs
+  const list = {};
+  const cookieHeader = req.headers.cookie;
 
+  if (cookieHeader) {
+      cookieHeader.split(';').forEach((cookie) => {
+          const parts = cookie.split('=');
+          list[parts.shift().trim()] = decodeURI(parts.join('='));
+      });
+  }
+
+  return list;
+}
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   console.log("WTF")
   try{
@@ -85,8 +97,23 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             resolve(result);
           }
         });
-        readStream.pipe(cloudinaryStream);
-      });
+        const cloudinaryResult = readStream.pipe(cloudinaryStream);
+        const dropboxPath = '/path/in/dropbox/' + file.originalFilename; // Set your Dropbox path
+
+        fs.readFile(file.filepath, (err, contents) => {
+            if (err) {
+              reject(err);
+            }
+
+            dbx.filesUpload({ path: dropboxPath, contents })
+              .then(dropboxResult => {
+                resolve({ cloudinaryResult, dropboxResult });
+              })
+              .catch(error => {
+                reject(error);
+              });
+          });
+        });
     });
     const uploadResults = await Promise.all(uploadPromises);
     res.status(200).json({ message: 'Files uploaded successfully', data: uploadResults });

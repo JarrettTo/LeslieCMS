@@ -1,5 +1,6 @@
-import { useState, useCallback, FormEvent } from 'react';
+import { useState, useCallback, FormEvent, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useRouter } from 'next/router';
 import * as XLSX from 'xlsx';
 
 const AdminPage: React.FC = () => {
@@ -9,6 +10,10 @@ const AdminPage: React.FC = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [sheet, setSheet] = useState<File>(null);
   const [error, setError] = useState<boolean>(false);
+  const [dbxAuth, setDbxAuth] = useState<boolean>(false);
+  const router = useRouter();
+
+  
   const onDrop = useCallback((acceptedFiles: File[]) => {
     acceptedFiles.forEach((file) => {
 
@@ -27,6 +32,19 @@ const AdminPage: React.FC = () => {
   const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(e.target.value);
   };
+  const DropboxLogin = () => {
+    const clientID = 'zxopq57digvsdau';
+    const redirectURI = 'http://localhost:3000/api/oauth/callback'; // Adjust depending on your setup
+
+    const redirectToDropbox = () => {
+        const authURL = `https://www.dropbox.com/oauth2/authorize?client_id=${clientID}&response_type=code&redirect_uri=${redirectURI}`;
+        window.location.href = authURL;
+    };
+
+    return (
+        <button onClick={redirectToDropbox}>Log in with Dropbox</button>
+    );
+  };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
@@ -40,7 +58,7 @@ const AdminPage: React.FC = () => {
     setIsLogged(true);
   };
   const handleUpload = async () => {
-    if (sheet) {
+    if (sheet && dbxAuth) {
       // Create a file reader
       const reader = new FileReader();
   
@@ -100,10 +118,26 @@ const AdminPage: React.FC = () => {
         
     }
   };
+  useEffect(() => {
+    // Check for the 'code' parameter returned by Dropbox after successful auth
+    if (router.query.login=="success") {
+      // Assume setIsLogged would be true if the user is already logged into your app
+      setIsLogged(true);
+      // You would typically exchange 'code' for an access token here
+      // and then set dbxAuth to true if that process is successful
+      setDbxAuth(true);
+
+      // Optionally, redirect to remove the code from the URL
+      
+    }
+  }, [router]);
   return (
     isLogged ? (
         <div>
         <h1>File Uploader</h1>
+        {!dbxAuth && (
+          <DropboxLogin/>
+        )}
         <div {...getRootProps()} style={{ border: '2px dashed black', padding: '20px', cursor: 'pointer' }}>
           <input {...getInputProps()} />
           {

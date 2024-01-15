@@ -2,6 +2,7 @@
   "/_app": "pages/_app.js",
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
-  "/api/upload_cd": "pages/api/upload_cd.js",
-  "/admin": "pages/admin.js"
+  "/": "pages/index.js",
+  "/admin": "pages/admin.js",
+  "/api/oauth/callback": "pages/api/oauth/callback.js"
 }
