@@ -12,9 +12,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const params = new URLSearchParams();
         params.append('code', code);
         params.append('grant_type', 'authorization_code');
-        params.append('client_id', clientID);
-        params.append('client_secret', clientSecret);
-        params.append('redirect_uri', redirectURI);
+        params.append('client_id', process.env.CLIENT_ID);
+        params.append('client_secret', process.env.CLIENT_SECRET);
+        params.append('redirect_uri', process.env.REDIRECT_URI);
 
         const response = await axios.post('https://api.dropbox.com/oauth2/token', params, {
             headers: {

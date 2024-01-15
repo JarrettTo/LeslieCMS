@@ -78,16 +78,16 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else{
         const fileDate = new Date(file.lastModifiedDate).toISOString();
         const context = {
-          award: record.AWARD,
-          idea: record.IDEA,
-          agency: record.AGENCY,
-          clients: record.CLIENTS,
-          director: record.DIRECTOR,
-          sound: record.SOUND,
-          with: record.WITH,
-          my_role: record.MY_ROLE,
-          production_co: record.PRODUCTION_CO,
-          date: fileDate
+          AWARD: record.AWARD,
+          IDEA: record.IDEA,
+          AGENCY: record.AGENCY,
+          CLIENTS: record.CLIENTS,
+          DIRECTOR: record.DIRECTOR,
+          SOUND: record.SOUND,
+          WITH: record.WITH,
+          MY_ROLE: record.MY_ROLE,
+          PRODUCTION_CO: record.PRODUCTION_CO,
+          DATE: fileDate
         };
 
         return new Promise((resolve, reject) => {
