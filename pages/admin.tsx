@@ -2,15 +2,20 @@ import { useState, useCallback, FormEvent, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useRouter } from 'next/router';
 import * as XLSX from 'xlsx';
-
+import styles from './styles.module.css'
 const AdminPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState(false);
   const [isLogged, setIsLogged] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [sheet, setSheet] = useState<File>(null);
   const [error, setError] = useState<boolean>(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [successful, setSuccessful] = useState(false);
+  const [dbxError, setDbxError] = useState(false);
   const [dbxAuth, setDbxAuth] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string>("");
   const router = useRouter();
 
   
@@ -52,16 +57,26 @@ const AdminPage: React.FC = () => {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    // Here you would handle the login logic
     console.log('Submitted', { username, password });
-    // For demonstration, we'll just set isLogged to true
-    setIsLogged(true);
+    if(username == 'Admin' && password == "Admin"){
+      setIsLogged(true);
+    }else{
+      setLoginError(true)
+    }
+    
+  };
+  const handleClear = (e: FormEvent) => {
+    e.preventDefault();
+    setFiles([]);
+    setSheet(null);
   };
   const handleUpload = async () => {
     if (sheet && dbxAuth) {
       // Create a file reader
       const reader = new FileReader();
-  
+      setSuccessful(false)
+      setIsUploading(true);
+      setUploadError(null);
       // On reader load
       reader.onload = async (e) => {
         // Parse data
@@ -91,16 +106,30 @@ const AdminPage: React.FC = () => {
           });
         // Send the request to your API endpoint
         try {   
-        const response = await fetch('/api/upload_cd', {
-            method: 'POST',
-            body: formData, // Send the form data
-            
-        });
+          const response = await fetch('/api/upload_cd', {
+              method: 'POST',
+              body: formData, // Send the form data
+              
+          });
 
-        const result = await response.json();
-        console.log(result);
+          const result = await response.json();
+          console.log(result);
+          if(result.status!=200){
+            setSuccessful(false)
+            setUploadError(result.message)
+          }
+          else{
+            setUploadError(null)
+            setSuccessful(true)
+          }
+          setFiles([])
+          setSheet(null)
+          
+          setIsUploading(false);
         } catch (error) {
             console.error('Error uploading files:', error);
+        }finally {
+          setIsUploading(false); // Stop the upload indicator
         }
           
        
@@ -110,14 +139,16 @@ const AdminPage: React.FC = () => {
       reader.readAsBinaryString(sheet);
     }
     else{
+      if(!dbxAuth){
+        setDbxError(true)
+      }
+      else{
         setError(true)
+      }
+      
     }
   };
-  const checkSheet = () => {
-    if(sheet != null){
-        
-    }
-  };
+ 
   useEffect(() => {
     // Check for the 'code' parameter returned by Dropbox after successful auth
     if (router.query.login=="success") {
@@ -130,13 +161,33 @@ const AdminPage: React.FC = () => {
       // Optionally, redirect to remove the code from the URL
       
     }
-  }, [router]);
+  }, [router, ]);
   return (
     isLogged ? (
         <div>
         <h1>File Uploader</h1>
+        {!dbxAuth && router.query.login == 'fail' &&(
+          <p>Dropbox Auth Failed!</p>
+        )}
         {!dbxAuth && (
           <DropboxLogin/>
+        )}
+        {isUploading && (
+          <div className={styles.uploadingIndicator}>
+            <div className={styles.spinner}></div>
+          </div>
+        )}
+        {successful && (
+          <p>Successfully Uploaded!</p>
+        )}
+        {dbxError && (
+          <p>You Need to Connect your Dropbox account first!</p>
+        )}
+        {error && (
+            <div>You need to upload an accompanying sheet with the upload information!</div>
+        )}
+        {uploadError && (
+            <div>Could not find files: {uploadError}</div>
         )}
         <div {...getRootProps()} style={{ border: '2px dashed black', padding: '20px', cursor: 'pointer' }}>
           <input {...getInputProps()} />
@@ -146,9 +197,7 @@ const AdminPage: React.FC = () => {
               <p>Drag 'n' drop some files here, or click to select files</p>
           }
         </div>
-        {error && (
-            <div>You need to upload an accompanying sheet with the upload information!</div>
-        )}
+        <button onClick={handleClear}>Clear</button>
         <button onClick={handleUpload}>Upload</button>
         {files.length > 0 && (
           <div>
@@ -168,6 +217,9 @@ const AdminPage: React.FC = () => {
     ): (
         <div>
             <h1>Admin Login</h1>
+            {loginError && (
+              <p>Incorrect username or password</p>
+            )}
             <form onSubmit={handleSubmit}>
                 <div>
                 <label htmlFor="username">Username:</label>

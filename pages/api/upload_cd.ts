@@ -12,30 +12,38 @@ cloudinary.v2.config({
   secure: true,
 });
 
-const Dropbox = require('dropbox').Dropbox;
-const dbx = new Dropbox({ accessToken: 'YOUR_DROPBOX_ACCESS_TOKEN' });
+interface CookieObject {
+  [key: string]: string;
+}
 
 
-function parseCookies(req) {
-  // The cookie header is a string of semicolon-separated key=value pairs
-  const list = {};
+function parseCookies(req: NextApiRequest): CookieObject {
+  const list: CookieObject = {};
   const cookieHeader = req.headers.cookie;
 
   if (cookieHeader) {
-      cookieHeader.split(';').forEach((cookie) => {
-          const parts = cookie.split('=');
-          list[parts.shift().trim()] = decodeURI(parts.join('='));
-      });
+    cookieHeader.split(';').forEach((cookie) => {
+      const parts = cookie.split('=');
+      const key = parts.shift().trim();
+      if (key) {
+        list[key] = decodeURI(parts.join('='));
+      }
+    });
   }
 
   return list;
 }
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  console.log("WTF")
+
   try{
 
-  // Parse JSON from the form data
+    const cookies = parseCookies(req);
+    const accessToken = cookies.token;
+    var error_msg="";
+    const Dropbox = require('dropbox').Dropbox;
+    const dbx = new Dropbox({ accessToken });
     const form = new formidable.IncomingForm();
+    
     form.parse(req, async (err, fields, files) => {
       if (err) {
         console.error('Error parsing the form data:', err);
@@ -45,13 +53,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
      // Handle your logic here. 'fields' contains non-file fields; 'files' contains file data
      
      const jsonData = JSON.parse(fields.json[0]);
-     console.log("DATA"+fields.json[0])
-     console.log("DATES" + fields['dates[chineserestaurantopenedtakeoutbox32oz3dsmodel001.jpg]'])
-     const keys = Object.keys(jsonData);
+
 
      const uploadPromises = jsonData.map((record) => {
-      console.log("WOW"+record)
-      console.log(Object.keys(files.files[0]));
+
       
     
       const index = files.files.findIndex(file => file.originalFilename === record.FILE_NAME);
@@ -67,56 +72,72 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       const file = files.files[index]; // Adjust this according to how files are named
       
       if (!file) {
-        throw new Error(`No file found matching the name: ${record.FILE_NAME}`);
+        error_msg= error_msg+`${record.FILE_NAME}, `
+
       }
-      console.log("CHECK: " + fields[`dates[${file.originalFilename}]`])
-      const fileDate = new Date(file.lastModifiedDate).toISOString();
-      const context = {
-        award: record.AWARD,
-        idea: record.IDEA,
-        agency: record.AGENCY,
-        clients: record.CLIENTS,
-        director: record.DIRECTOR,
-        sound: record.SOUND,
-        with: record.WITH,
-        my_role: record.MY_ROLE,
-        production_co: record.PRODUCTION_CO,
-        date: fileDate
-      };
-      console.log(context)
-      return new Promise((resolve, reject) => {
-        const readStream = fs.createReadStream(file.filepath);
-        const cloudinaryStream= cloudinary.v2.uploader.upload_stream({ 
-          resource_type: 'auto', 
-          public_id: record["FILE_NAME"], // Optional: use a public ID from the record
-          context: context // Optional: add additional metadata from the record
-        }, (error, result) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(result);
-          }
-        });
-        const cloudinaryResult = readStream.pipe(cloudinaryStream);
-        const dropboxPath = '/path/in/dropbox/' + file.originalFilename; // Set your Dropbox path
+      else{
+        const fileDate = new Date(file.lastModifiedDate).toISOString();
+        const context = {
+          award: record.AWARD,
+          idea: record.IDEA,
+          agency: record.AGENCY,
+          clients: record.CLIENTS,
+          director: record.DIRECTOR,
+          sound: record.SOUND,
+          with: record.WITH,
+          my_role: record.MY_ROLE,
+          production_co: record.PRODUCTION_CO,
+          date: fileDate
+        };
 
-        fs.readFile(file.filepath, (err, contents) => {
-            if (err) {
-              reject(err);
+        return new Promise((resolve, reject) => {
+          const readStream = fs.createReadStream(file.filepath);
+          const cloudinaryStream= cloudinary.v2.uploader.upload_stream({ 
+            resource_type: 'auto', 
+            public_id: record["FILE_NAME"], // Optional: use a public ID from the record
+            context: context // Optional: add additional metadata from the record
+          }, (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
             }
-
-            dbx.filesUpload({ path: dropboxPath, contents })
-              .then(dropboxResult => {
-                resolve({ cloudinaryResult, dropboxResult });
-              })
-              .catch(error => {
-                reject(error);
-              });
           });
-        });
+          const cloudinaryResult = readStream.pipe(cloudinaryStream);
+          const dropboxPath = '/' + file.originalFilename; // Set your Dropbox path
+
+          fs.readFile(file.filepath, (err, contents) => {
+              if (err) {
+                reject(err);
+              }
+
+              dbx.filesUpload({ path: dropboxPath, contents })
+                .then(dropboxResult => {
+                  resolve(dropboxResult);
+                })
+                .catch(error => {
+                  reject(error);
+                });
+            });
+          });
+        }
+      
     });
-    const uploadResults = await Promise.all(uploadPromises);
-    res.status(200).json({ message: 'Files uploaded successfully', data: uploadResults });
+
+ 
+    const uploadResults = await Promise.allSettled(uploadPromises);
+    uploadResults.forEach((result) => {
+      if (result.status === 'rejected') {
+        console.log('A file upload failed:', result.reason);
+      }
+    });
+    if(error_msg==""){
+      res.status(200).json({ message: 'Files uploaded successfully', data: uploadResults, status: 200});
+    }
+    else{
+      res.status(400).json({ message: error_msg, data: uploadResults, status: 400});
+    }
+    
    });
    
   
@@ -126,7 +147,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     
 
   } catch (error) {
-    console.log(error)
+    console.log("Here")
     res.status(500).json({ error: 'Error uploading to Cloudinary', details: error });
   }
 }

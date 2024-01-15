@@ -53,11 +53,6 @@ const Home: React.FC = () => {
     setIsClosing(false); // Make sure to reset closing state
   };
   
-  function getFileExtension(filename) {
-    // Find the last dot in the filename
-    const lastDotIndex = filename?.lastIndexOf('.');
-    return lastDotIndex !== -1 ? filename?.substring(lastDotIndex + 1) : '';
-  }
   function removeFileExtension(fileName) {
     // Use a regular expression to replace the file extension with an empty string
     return fileName.replace(/\.[^/.]+$/, "");
@@ -97,28 +92,6 @@ const Home: React.FC = () => {
     progressBarRef.current.value = progress;
   };
 
-  const fetchDropboxFiles = async () => {
-    try {
-      const res = await fetch('/api/dropbox');
-      if (!res.ok) {
-        throw new Error(`Error: ${res.status}`);
-      }
-      const data = await res.json();
-      const processedFiles = await Promise.all(data.map(async file => {
-        const url = await convertDropboxLink(file);
-        if(url!=null){
-          return { ...file, preview_url: url }; 
-        }
-        // Combine the file info with the new URL
-      }));
-      const filteredFiles = processedFiles.filter(file => file!= null);
-      console.log(filteredFiles)
-      setFiles(filteredFiles);
-
-    } catch (error) {
-      console.error('There was an error fetching the Dropbox files', error);
-    }
-  };
   const moveToNextMedia = (event) => {
     setPanelClick(true)
     event.stopPropagation(); // Stop click from bubbling up
